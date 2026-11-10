@@ -1,0 +1,22 @@
+name: CI
+
+# Pull requests (including Renovate's): type-check, test, and build both browsers.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5 # installs the bun version pinned in mise.toml
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun test
+      - run: bun run build
+      - run: bun run build:firefox
+      - name: Lint the Firefox build the way AMO will
+        run: bunx web-ext lint --source-dir .output/firefox-mv2 --self-hosted

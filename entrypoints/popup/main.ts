@@ -13,16 +13,24 @@ let lastSweep: LastSweep | undefined;
 const send = (msg: Message) => browser.runtime.sendMessage(msg);
 const hhmm = (t: number) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-const GLOBE =
-  '<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">' +
-  '<circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c2 2 2.8 4 2.8 6.5S10 12.5 8 14.5M8 1.5C6 3.5 5.2 5.5 5.2 8S6 12.5 8 14.5"/></svg>';
+const SVG = 'http://www.w3.org/2000/svg';
+
+/** Generic page icon, built as DOM nodes (AMO's linter rejects innerHTML even for static markup). */
+function globe(): SVGSVGElement {
+  const svg = document.createElementNS(SVG, 'svg');
+  for (const [k, v] of Object.entries({ viewBox: '0 0 16 16', 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', 'stroke-width': '1.2' }))
+    svg.setAttribute(k, v);
+  const circle = document.createElementNS(SVG, 'circle');
+  circle.setAttribute('cx', '8');
+  circle.setAttribute('cy', '8');
+  circle.setAttribute('r', '6.5');
+  const path = document.createElementNS(SVG, 'path');
+  path.setAttribute('d', 'M1.5 8h13M8 1.5c2 2 2.8 4 2.8 6.5S10 12.5 8 14.5M8 1.5C6 3.5 5.2 5.5 5.2 8S6 12.5 8 14.5');
+  svg.append(circle, path);
+  return svg;
+}
 
 function icon(entry: TrashEntry): Node {
-  const globe = () => {
-    const span = document.createElement('span');
-    span.innerHTML = GLOBE; // static markup, no user data
-    return span.firstChild!;
-  };
   if (!entry.favIconUrl) return globe();
   const img = document.createElement('img');
   img.alt = '';

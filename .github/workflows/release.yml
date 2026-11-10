@@ -1,0 +1,86 @@
+name: Release
+
+# Every push to main: test, build both browsers, get the Firefox/Zen build signed by Mozilla
+# (unlisted: signed, not listed on addons.mozilla.org), and publish a GitHub Release vN.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write # create the GitHub Release + tag
+
+# Serialize releases so concurrent pushes don't race on version computation,
+# and AMO never sees two submissions of the same version.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # need full tag history to compute the next version
+
+      - name: Compute next version (single incrementing integer)
+        run: |
+          git fetch --tags --force
+          latest="$(git tag -l 'v*' | grep -E '^v[0-9]+$' | sort -V | tail -n1)"
+          if [ -z "$latest" ]; then next=1; else next=$(( ${latest#v} + 1 )); fi
+          echo "VERSION=$next" >> "$GITHUB_ENV"
+          echo "TAG=v$next" >> "$GITHUB_ENV"
+          echo "Releasing v$next"
+
+      - uses: jdx/mise-action@v5 # installs the bun version pinned in mise.toml
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun test
+
+      # The manifest version comes from package.json; a local build stays 0.0.0 so it can't pass for a release.
+      - name: Stamp the version
+        run: bun pm pkg set version="$VERSION"
+
+      - name: Build and zip both browsers
+        run: |
+          bun run zip
+          bun run zip:firefox
+          ls -l .output/*.zip
+
+      # Unlisted signing: Mozilla signs the build so it installs permanently in Firefox/Zen,
+      # without a store listing. The sources zip goes along because the built code is minified.
+      # Skipped (release still happens, minus the .xpi) until both AMO secrets are set.
+      - name: Sign the Firefox/Zen build with Mozilla
+        if: env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != ''
+        run: |
+          bunx web-ext sign \
+            --channel unlisted \
+            --source-dir .output/firefox-mv2 \
+            --upload-source-code ".output/tab-sweeper-${VERSION}-sources.zip" \
+            --api-key "$AMO_JWT_ISSUER" \
+            --api-secret "$AMO_JWT_SECRET" \
+            --approval-timeout 900000 \
+            --artifacts-dir signed
+          mv signed/*.xpi ".output/tab-sweeper-${VERSION}-firefox.xpi"
+
+      # Creates tag vN at this commit and attaches the packages.
+      # (The tag does not retrigger this workflow; it only runs on pushes to main.)
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.TAG }}
+          name: ${{ env.TAG }}
+          generate_release_notes: true
+          fail_on_unmatched_files: false
+          files: |
+            .output/tab-sweeper-${{ env.VERSION }}-firefox.xpi
+            .output/tab-sweeper-${{ env.VERSION }}-chrome.zip
+            .output/tab-sweeper-${{ env.VERSION }}-sources.zip
+          body: |
+            **Zen / Firefox:** open `tab-sweeper-${{ env.VERSION }}-firefox.xpi` from this release and confirm the install.
+
+            **Chrome / Chromium / Brave:** unzip `tab-sweeper-${{ env.VERSION }}-chrome.zip`, open `chrome://extensions`,
+            turn on Developer mode, click **Load unpacked** and pick the unzipped folder.

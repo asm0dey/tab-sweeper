@@ -2,7 +2,7 @@
   "name": "tab-sweeper",
   "description": "Closes tabs you have not looked at in a while. Keeps pinned tabs and Zen Essentials.",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "wxt",
@@ -18,10 +18,11 @@
     "postinstall": "wxt prepare"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/bun": "^1.4.4",
     "typescript": "^5.9.3",
     "vite": "^8.1.5",
     "web-ext": "^10.5.0",
     "wxt": "^0.21.5"
-  }
+  },
+  "license": "0BSD"
 }
