@@ -31,7 +31,7 @@ The goal is less clutter, not lower memory use (unloading/discarding tabs is not
 
 - Closing a pinned tab or an Essential.
 - Closing the tab the user is currently looking at.
-- Losing a closed tab with no way to reopen it, while it is still among the last 200.
+- Losing a closed tab with no way to reopen it, while it is still among the last M.
 
 ## Behavior
 
