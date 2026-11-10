@@ -38,12 +38,19 @@ The goal is less clutter, not lower memory use (unloading/discarding tabs is not
 ### Sweep
 
 - Runs on a periodic alarm every 5 minutes, and only while the "Auto-close" switch is on.
+- **Also runs once immediately on browser start** (`runtime.onStartup`), after session restore has created the
+  tabs (author's decision). Idle time carries over across restarts: a restart does **not** reset any tab's clock.
+  So after a weekend away with N=12h, Friday's unpinned tabs close as soon as the browser opens.
 - Candidate tabs: every tab in every normal, non-private window where
   `now - max(tab.lastAccessed, clockStart) > N hours`.
-- **Fresh clock (author's decision):** `clockStart` is a stored timestamp, set on install (`runtime.onInstalled`),
-  on browser start (`runtime.onStartup`) and whenever the Auto-close switch is turned on. So tabs that are
-  already idle at that moment get a full N hours before closing, and there's no mass close on first install or
-  after a weekend away. A Chrome service-worker restart is **not** a browser start and must not reset it.
+- **Fresh clock, install and re-enable only (author's decision):** `clockStart` is a stored timestamp, set on
+  first install (`runtime.onInstalled` with reason `install`) and whenever the Auto-close switch is turned on.
+  Tabs already idle at that moment get a full N hours, so installing from the store doesn't mass-close.
+  It is **not** set on browser start, on update, or on a Chrome service-worker restart.
+- **Restart timestamps (verify first, Claude's call):** check in Zen, Chrome, Chromium and Brave that restored
+  tabs keep their pre-restart `lastAccessed`. Where a browser resets it, the extension keeps its own last-seen
+  time per tab in `storage.local` (updated on `tabs.onActivated` and on each sweep) and, after restart, matches
+  restored tabs to those records by URL. Build this only for browsers that need it.
 - Always skipped, even when idle:
   - `tab.pinned` (covers Essentials in Zen, see Constraints)
   - `tab.active` in its window (the tab on screen)
@@ -115,8 +122,8 @@ scratch only, not part of the repo).
   (Claude's call; there is no pre-approved fallback).
 - **Chromium targets:** Chrome, Chromium and Brave (the browsers the author uses). Test pinned-tab detection and
   the sweep in all three, plus Zen.
-- **`lastAccessed`**: available in Firefox and in Chrome 121+. Its behavior after a browser restart is unverified,
-  but the fresh clock above makes either outcome safe.
+- **`lastAccessed`**: available in Firefox and in Chrome 121+. Whether it survives a browser restart is unverified;
+  see "Restart timestamps" under Sweep.
 - Use the `browser.*` API through WXT so the code stays cross-browser. No Firefox-only APIs (e.g. `tabs.hide`,
   Zen internals).
 - Chrome MV3 background is a service worker, so it can't keep in-memory state: all state lives in `storage.local`,
@@ -135,7 +142,8 @@ scratch only, not part of the repo).
 - No "Sweep now" button.
 - Support Zen/Firefox and Chrome-based browsers, shareable via the stores.
 - Approach A: WXT + TypeScript + bun.
-- Fresh clock: idle time counts from install, browser start or re-enabling at the earliest.
+- Fresh clock only on first install and on re-enabling Auto-close; a browser restart keeps every tab's idle time.
+- Sweep immediately on browser start.
 - Chromium targets: Chrome, Chromium, Brave.
 
 ## Proposed by Claude (author may veto)
@@ -150,6 +158,7 @@ scratch only, not part of the repo).
 - Trash size range 10–1000, default 200; lowering it trims immediately.
 - Private windows ignored entirely.
 - If Essentials aren't `pinned` in Zen: stop and ask, no fallback built in advance.
+- If a browser resets `lastAccessed` on restore: track last-seen times ourselves, matched by URL.
 
 ## Left to the builder
 
