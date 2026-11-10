@@ -132,6 +132,22 @@ scratch only, not part of the repo).
 - Tooling, from the author's recorded precedents: bun for install/scripts/build/test, and a `renovate.json` from
   the start in the standard shape.
 
+## Testing and dev scripts (author approved)
+
+- `bun run dev` (Chrome), `dev:chromium`, `dev:brave`, `dev:zen`: WXT dev mode, opening that browser with the
+  add-on loaded and auto-reloading. Browser binary paths live in the git-ignored `web-ext.config.ts`
+  (`binaries`); commit a `web-ext.config.example.ts`.
+- `bun test`: unit tests for the pure "which tabs to close" selection (pinned, active, audible, private, fresh
+  clock, restart carry-over) and trash capping/trimming.
+- **Dev-only minutes switch:** in dev builds only, an option to count N in minutes instead of hours, so a sweep
+  can be watched in minutes. It must not exist in store builds (gate on WXT's dev/build mode).
+- Real-profile testing: `bun run build` then Load unpacked `.output/chrome-mv3` in Chrome/Chromium/Brave;
+  `bun run build:firefox` then `about:debugging` → Load Temporary Add-on in Zen. Temporary add-ons vanish when
+  Zen closes, so restart behavior in Zen needs a signed build (AMO unlisted signing via `web-ext sign` / `wxt
+  submit` is fine for that).
+- Tooling: `mise.toml` pins bun (author's go-ahead to use mise). Scripts stay in `package.json`, because
+  language-specific tasks stay with that language's own runner (author's precedent).
+
 ## Decided by the author
 
 - N is a single add-on-global setting, tunable.
