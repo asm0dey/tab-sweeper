@@ -2,9 +2,89 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="color-scheme" content="light dark" />
     <title>Tab Sweeper</title>
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <p>Tab Sweeper</p>
+    <div class="pop">
+      <div class="tabs" role="tablist" aria-label="Tab Sweeper">
+        <button role="tab" id="tab-swept" aria-controls="panel-swept" aria-selected="true">Swept</button>
+        <button role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false" tabindex="-1">
+          Settings
+        </button>
+      </div>
+
+      <section id="panel-swept" class="panel" role="tabpanel" aria-labelledby="tab-swept">
+        <div class="search">
+          <label class="sr-only" for="q">Search closed tabs</label>
+          <input id="q" type="search" placeholder="Search closed tabs" autocomplete="off" />
+        </div>
+        <div id="list" class="scroll"></div>
+        <footer class="ft">
+          <div id="ft-actions">
+            <button id="restore-all" class="link">Restore all</button>
+            <button id="clear" class="link">Clear</button>
+          </div>
+          <div id="ft-confirm" hidden>
+            <span id="confirm-text"></span>
+            <button id="confirm-yes" class="link danger">Yes</button>
+            <button id="confirm-no" class="link">No</button>
+          </div>
+        </footer>
+      </section>
+
+      <section id="panel-settings" class="panel" role="tabpanel" aria-labelledby="tab-settings" hidden>
+        <div class="scroll">
+          <div class="grp row">
+            <div class="grow">
+              <div class="lbl" id="enabled-lbl">Auto-close</div>
+              <div class="help">Checks every 5 minutes</div>
+            </div>
+            <button id="enabled" class="switch" role="switch" aria-checked="true" aria-labelledby="enabled-lbl"></button>
+          </div>
+
+          <div class="grp row">
+            <div class="grow">
+              <label class="lbl" for="hours">Close tabs idle for</label>
+              <div class="help">1 to 720 hours</div>
+            </div>
+            <div class="stepper">
+              <button id="hours-dec" aria-label="Fewer hours">−</button>
+              <input id="hours" type="number" min="1" max="720" step="1" inputmode="numeric" />
+              <span class="unit" id="hours-unit">h</span>
+              <button id="hours-inc" aria-label="More hours">+</button>
+            </div>
+          </div>
+
+          <div class="grp">
+            <div class="lbl">Never closed</div>
+            <ul class="keep">
+              <li>Pinned tabs and Essentials</li>
+              <li>The tab you're looking at in each window</li>
+              <li>Tabs playing sound</li>
+            </ul>
+          </div>
+
+          <div class="grp row">
+            <div class="grow">
+              <label class="lbl" for="trash-size">Keep in trash</label>
+              <div class="help">Survives restarts. Oldest drop off first.</div>
+            </div>
+            <div class="stepper">
+              <input id="trash-size" type="number" min="10" max="1000" step="10" inputmode="numeric" />
+              <span class="unit">tabs</span>
+            </div>
+          </div>
+
+          <div class="grp row" id="dev-row" hidden>
+            <label class="grow lbl" for="dev-minutes">Count idle time in minutes (dev build)</label>
+            <input id="dev-minutes" type="checkbox" />
+          </div>
+        </div>
+        <footer class="ft"><span id="last-sweep" class="muted"></span></footer>
+      </section>
+    </div>
+    <script type="module" src="./main.ts"></script>
   </body>
 </html>
