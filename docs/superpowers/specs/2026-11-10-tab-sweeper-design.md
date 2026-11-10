@@ -16,7 +16,7 @@ The goal is less clutter, not lower memory use (unloading/discarding tabs is not
 - Never close pinned tabs. In Zen this must also cover Essentials and per-workspace pinned tabs.
 - Tabs in Zen workspaces the user hasn't opened age out exactly like any other tab (author's decision). Only
   pinned tabs and Essentials are exempt.
-- Keep a trash bin with the last 200 auto-closed tabs so the user can reopen any of them. Firefox's own
+- Keep a trash bin with the last M auto-closed tabs (M configurable, default 200) so the user can reopen any of them. Firefox's own
   recently-closed list holds only 25, which is too few for a sweep.
 - Work in Zen/Firefox and Chrome-based browsers from one codebase, and be publishable to both add-on stores.
 
@@ -56,8 +56,8 @@ The goal is less clutter, not lower memory use (unloading/discarding tabs is not
 
 ### Trash bin
 
-- Stores `{url, title, favIconUrl, closedAt}` for each auto-closed tab, newest first, capped at 200 (FIFO: the
-  oldest drops off when a new one arrives).
+- Stores `{url, title, favIconUrl, closedAt}` for each auto-closed tab, newest first, capped at M (FIFO: the
+  oldest drops off when a new one arrives). Lowering M trims the oldest entries immediately.
 - Persists across browser restarts (`storage.local`).
 - Only auto-closed tabs go in. Tabs the user closes by hand are not recorded.
 - Restoring a row opens the URL in a new tab in the current window (in Zen that means the current workspace) and
@@ -68,7 +68,8 @@ The goal is less clutter, not lower memory use (unloading/discarding tabs is not
 
 - Auto-close: on/off switch. Default on.
 - Close tabs idle for: hours stepper that also accepts typed input. Range 1–720, default 12.
-- Changes take effect at the next 5-minute check.
+- Trash size M: number input, range 10–1000, default 200 (author's request; range and default are Claude's call).
+- Idle-hours changes take effect at the next 5-minute check.
 
 ## Interface (author chose layout B from mockups)
 
@@ -90,7 +91,7 @@ ui-ux-pro-max skill (author's request).
 2. "Close tabs idle for" hours stepper.
 3. "Never closed" read-only list: pinned tabs and Essentials, the tab you're looking at in each window, tabs
    playing sound.
-4. Trash bin note: keeps the last 200 swept tabs and survives restarts.
+4. "Keep in trash" number input (M tabs), with the help text: survives restarts, oldest drop off first.
 5. Footer: "Last sweep HH:MM · closed K".
 
 Mockups from the session: `popup-layout.html`, `popup-scroll.html` and `popup-settings.html` (visual companion,
@@ -129,7 +130,7 @@ scratch only, not part of the repo).
 - N is a single add-on-global setting, tunable.
 - Pinned tabs and Essentials are never closed.
 - Tabs in other Zen workspaces age out like any other tab.
-- Trash bin of the last 200 auto-closed tabs.
+- Trash bin of the last M auto-closed tabs, M configurable.
 - Popup layout B (two tabs: Swept, Settings) with sticky day headings.
 - No "Sweep now" button.
 - Support Zen/Firefox and Chrome-based browsers, shareable via the stores.
@@ -146,6 +147,7 @@ scratch only, not part of the repo).
 - Restore opens in the current window/workspace and removes the row.
 - Manually closed tabs are not recorded in the trash.
 - Name "Tab Sweeper".
+- Trash size range 10–1000, default 200; lowering it trims immediately.
 - Private windows ignored entirely.
 - If Essentials aren't `pinned` in Zen: stop and ask, no fallback built in advance.
 
