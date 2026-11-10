@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Tab Sweeper: a browser tab with a sweep arc -->
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="#0061e0"/>
+  <path d="M30 50a8 8 0 0 1 8-8h22l8 10h22a8 8 0 0 1 8 8v30a8 8 0 0 1-8 8H38a8 8 0 0 1-8-8z" fill="#fff"/>
+  <path d="M44 84c10 4 30 4 42-8" fill="none" stroke="#0061e0" stroke-width="7" stroke-linecap="round"/>
+  <path d="M78 70l9 5-4 10" fill="none" stroke="#0061e0" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
