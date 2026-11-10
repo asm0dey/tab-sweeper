@@ -1,0 +1,84 @@
+<style>
+  .pop{width:340px;margin:0 auto;background:#1c1b22;color:#fbfbfe;border-radius:10px;font:13px/1.45 system-ui,sans-serif;overflow:hidden;border:1px solid #3a3944;text-align:left}
+  .pop .hd{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #3a3944;font-weight:600}
+  .pop .muted{color:#a9a8b3;font-weight:400;font-size:12px}
+  .pop .row{display:flex;align-items:center;gap:10px;padding:8px 14px}
+  .pop .fav{width:16px;height:16px;border-radius:4px;flex:none}
+  .pop .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pop .ago{color:#a9a8b3;font-size:12px;flex:none}
+  .pop .list .row:hover{background:#2b2a33}
+  .pop .stepper{display:flex;align-items:center;border:1px solid #52525e;border-radius:6px}
+  .pop .stepper span{padding:3px 10px}
+  .pop .stepper b{padding:3px 10px;border-left:1px solid #52525e;border-right:1px solid #52525e;font-weight:600}
+  .pop input.s{width:100%;box-sizing:border-box;background:#2b2a33;border:1px solid #52525e;border-radius:6px;color:#fbfbfe;padding:6px 8px;font:inherit}
+  .pop .tabs{display:flex;border-bottom:1px solid #3a3944}
+  .pop .tabs div{flex:1;text-align:center;padding:8px;color:#a9a8b3}
+  .pop .tabs .on{color:#fbfbfe;box-shadow:inset 0 -2px 0 #8f8ff7}
+  .pop .ft{display:flex;justify-content:space-between;padding:8px 14px;border-top:1px solid #3a3944;font-size:12px;color:#8f8ff7}
+  .pop .sw{width:30px;height:16px;border-radius:8px;background:#8f8ff7;position:relative;flex:none}
+  .pop .sw:after{content:"";position:absolute;right:2px;top:2px;width:12px;height:12px;border-radius:6px;background:#fff}
+  .pop .sec{padding:4px 14px;color:#a9a8b3;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+</style>
+
+<h2>Which popup layout feels right?</h2>
+<p class="subtitle">Opens when you click the toolbar icon. Dark theme shown; it follows Zen's light/dark setting. Click to pick one.</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="pop">
+        <div class="hd">Tab Sweeper <span class="sw"></span></div>
+        <div class="row">Close tabs idle for <span style="flex:1"></span><div class="stepper"><span>−</span><b>12 h</b><span>+</span></div></div>
+        <div class="sec">Recently swept · 37</div>
+        <div style="padding:0 14px 6px"><input class="s" placeholder="Search closed tabs"></div>
+        <div class="list">
+          <div class="row"><div class="fav" style="background:#e34c26"></div><div class="t">How Zen workspaces work – docs</div><div class="ago">2h</div></div>
+          <div class="row"><div class="fav" style="background:#0a66c2"></div><div class="t">Issue #412: pinned tabs lost on restart</div><div class="ago">2h</div></div>
+          <div class="row"><div class="fav" style="background:#ff4500"></div><div class="t">r/firefox – lastAccessed after restore</div><div class="ago">5h</div></div>
+          <div class="row"><div class="fav" style="background:#24292f"></div><div class="t">zen-browser/desktop · Pull request #1880</div><div class="ago">1d</div></div>
+        </div>
+        <div class="ft"><span>Restore all</span><span>Clear</span></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>A · Everything on one screen</h3><p>Idle hours and an on/off switch at the top, trash list below. One click to change N or reopen a tab.</p></div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="pop">
+        <div class="tabs"><div class="on">Swept · 37</div><div>Settings</div></div>
+        <div style="padding:8px 14px 6px"><input class="s" placeholder="Search closed tabs"></div>
+        <div class="sec">Today</div>
+        <div class="list">
+          <div class="row"><div class="fav" style="background:#e34c26"></div><div class="t">How Zen workspaces work – docs</div><div class="ago">14:02</div></div>
+          <div class="row"><div class="fav" style="background:#0a66c2"></div><div class="t">Issue #412: pinned tabs lost on restart</div><div class="ago">14:02</div></div>
+        </div>
+        <div class="sec">Yesterday</div>
+        <div class="list">
+          <div class="row"><div class="fav" style="background:#24292f"></div><div class="t">zen-browser/desktop · Pull request #1880</div><div class="ago">09:40</div></div>
+          <div class="row"><div class="fav" style="background:#ff4500"></div><div class="t">r/firefox – lastAccessed after restore</div><div class="ago">09:40</div></div>
+        </div>
+        <div class="ft"><span>Restore all</span><span>Clear</span></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>B · Two tabs: list and settings</h3><p>Opens straight on the trash list, grouped by day. Settings live on a second tab, which leaves room for more options later.</p></div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="pop">
+        <div class="hd">Recently swept <span class="muted">⚙ in Add-ons</span></div>
+        <div style="padding:8px 14px 6px"><input class="s" placeholder="Search closed tabs"></div>
+        <div class="list">
+          <div class="row"><div class="fav" style="background:#e34c26"></div><div class="t">How Zen workspaces work – docs</div><div class="ago">2h</div></div>
+          <div class="row"><div class="fav" style="background:#0a66c2"></div><div class="t">Issue #412: pinned tabs lost on restart</div><div class="ago">2h</div></div>
+          <div class="row"><div class="fav" style="background:#ff4500"></div><div class="t">r/firefox – lastAccessed after restore</div><div class="ago">5h</div></div>
+          <div class="row"><div class="fav" style="background:#24292f"></div><div class="t">zen-browser/desktop · Pull request #1880</div><div class="ago">1d</div></div>
+          <div class="row"><div class="fav" style="background:#7c3aed"></div><div class="t">Notion – Q4 planning</div><div class="ago">1d</div></div>
+        </div>
+        <div class="ft"><span>Restore all</span><span>Clear</span></div>
+      </div>
+    </div>
+    <div class="card-body"><h3>C · Popup is just the trash</h3><p>N is set once on the add-on's own page (about:addons → Preferences). The smallest popup, but changing N takes more clicks.</p></div>
+  </div>
+</div>

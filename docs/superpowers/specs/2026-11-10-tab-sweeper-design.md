@@ -101,8 +101,8 @@ ui-ux-pro-max skill (author's request).
 4. "Keep in trash" number input (M tabs), with the help text: survives restarts, oldest drop off first.
 5. Footer: "Last sweep HH:MM · closed K".
 
-Mockups from the session: `popup-layout.html`, `popup-scroll.html` and `popup-settings.html` (visual companion,
-scratch only, not part of the repo).
+Mockups from the session: `docs/superpowers/mockups/` (`popup-layout.html`, `popup-scroll.html`,
+`popup-settings.html`). Layout B is the chosen one; "Sweep now" in them is dropped.
 
 ## Approaches considered
 
