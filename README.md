@@ -1,4 +1,6 @@
-# Tab Sweeper
+<p align="center"><img src="assets/icon.svg" width="96" height="96" alt=""></p>
+
+<h1 align="center">Tab Sweeper</h1>
 
 A browser extension that closes tabs you haven't looked at in N hours, so the tab bar stays clean on its own.
 Works in Zen, Firefox, Chrome, Chromium and Brave.
