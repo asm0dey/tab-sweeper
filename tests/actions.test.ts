@@ -17,6 +17,7 @@ let store: Record<string, unknown>;
 let tabs: FakeTab[];
 let failRemove: Set<number>;
 let created: string[];
+let afterQuery: (() => void) | undefined;
 
 const fake = {
   storage: {
@@ -26,7 +27,16 @@ const fake = {
     },
   },
   tabs: {
-    query: async () => structuredClone(tabs),
+    query: async () => {
+      const snapshot = structuredClone(tabs);
+      afterQuery?.();
+      return snapshot;
+    },
+    get: async (id: number) => {
+      const t = tabs.find((x) => x.id === id);
+      if (!t) throw new Error(`No tab with id: ${id}`);
+      return structuredClone(t);
+    },
     remove: async (id: number) => {
       if (failRemove.has(id)) throw new Error('Tabs cannot be edited right now');
       tabs = tabs.filter((t) => t.id !== id);
@@ -60,6 +70,7 @@ beforeEach(() => {
   tabs = [];
   failRemove = new Set();
   created = [];
+  afterQuery = undefined;
 });
 
 test('sweep closes an idle tab and trashes it first', async () => {
@@ -128,4 +139,12 @@ test('a disabled sweep does nothing', async () => {
   tabs = [tab(1)];
   await actions.sweep(false);
   expect(tabs).toHaveLength(1);
+});
+
+test('a tab that becomes active between the check and the close is kept, with no trash entry', async () => {
+  tabs = [tab(1)];
+  afterQuery = () => (tabs[0]!.active = true);
+  await actions.sweep(false);
+  expect(tabs).toHaveLength(1);
+  expect(trash()).toHaveLength(0);
 });

@@ -57,6 +57,7 @@ button, input { font: inherit; color: inherit; }
   background: none; border: 0; text-align: left; cursor: pointer;
 }
 .item:hover { background: var(--bg-hover); }
+.item:focus-visible { outline-offset: -2px; } /* the scroll container would clip an outer ring */
 .item img, .item svg { width: 16px; height: 16px; flex: none; }
 .item .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .item .ago { flex: none; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
@@ -76,7 +77,7 @@ button, input { font: inherit; color: inherit; }
 .grp { padding: 12px 14px; border-bottom: 1px solid var(--border); }
 .row { display: flex; align-items: center; gap: 12px; }
 .grow { flex: 1; min-width: 0; }
-.lbl { font-weight: 600; display: block; }
+.lbl { font-weight: 600; display: block; font-size: inherit; margin: 0; }
 .help { color: var(--muted); font-size: 12px; margin-top: 2px; }
 .keep { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: 12px; }
 

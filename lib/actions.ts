@@ -55,7 +55,14 @@ export async function sweep(isDev: boolean) {
   );
   // Trash first, so a failure between the two steps can't lose a tab.
   if (entries.size) await setTrash(pushEntries(dropReswept(await getTrash(), doomed), [...entries.values()], settings.trashSize));
-  const results = await Promise.allSettled(doomed.map((t) => browser.tabs.remove(t.id!)));
+  const results = await Promise.allSettled(
+    doomed.map(async (t) => {
+      // Re-check right before closing: the user may have switched to it (or pinned it) since the query.
+      const fresh = await browser.tabs.get(t.id!);
+      if (fresh.active || fresh.pinned || fresh.audible) throw new Error('tab is in use again');
+      await browser.tabs.remove(t.id!);
+    }),
+  );
   const stillOpen = doomed.filter((_, i) => results[i]?.status === 'rejected');
   const orphaned = stillOpen.flatMap((t) => entries.get(t.id!)?.id ?? []);
   if (orphaned.length) await setTrash(removeEntries(await getTrash(), orphaned));

@@ -20,6 +20,7 @@
           <label class="sr-only" for="q">Search closed tabs</label>
           <input id="q" type="search" placeholder="Search closed tabs" autocomplete="off" />
         </div>
+        <div id="status" class="sr-only" role="status" aria-live="polite"></div>
         <div id="list" class="scroll"></div>
         <footer class="ft">
           <div id="ft-actions">
@@ -39,27 +40,28 @@
           <div class="grp row">
             <div class="grow">
               <div class="lbl" id="enabled-lbl">Auto-close</div>
-              <div class="help">Checks every 5 minutes</div>
+              <div class="help" id="enabled-help">Checks every 5 minutes</div>
             </div>
-            <button id="enabled" class="switch" role="switch" aria-checked="true" aria-labelledby="enabled-lbl"></button>
+            <button id="enabled" class="switch" role="switch" aria-checked="true" aria-labelledby="enabled-lbl"
+              aria-describedby="enabled-help"></button>
           </div>
 
           <div class="grp row">
             <div class="grow">
               <label class="lbl" for="hours">Close tabs idle for</label>
-              <div class="help">1 to 720 hours</div>
+              <div class="help" id="hours-help">1 to 720 hours</div>
             </div>
             <div class="stepper">
               <button id="hours-dec" aria-label="Fewer hours">−</button>
-              <input id="hours" type="number" min="1" max="720" step="1" inputmode="numeric" />
+              <input id="hours" type="number" min="1" max="720" step="1" inputmode="numeric" aria-describedby="hours-help" />
               <span class="unit" id="hours-unit">h</span>
               <button id="hours-inc" aria-label="More hours">+</button>
             </div>
           </div>
 
           <div class="grp">
-            <div class="lbl">Never closed</div>
-            <ul class="keep">
+            <h2 class="lbl" id="keep-lbl">Never closed</h2>
+            <ul class="keep" aria-labelledby="keep-lbl">
               <li>Pinned tabs and Essentials</li>
               <li>The tab you're looking at in each window</li>
               <li>Tabs playing sound</li>
@@ -69,10 +71,11 @@
           <div class="grp row">
             <div class="grow">
               <label class="lbl" for="trash-size">Keep in trash</label>
-              <div class="help">Survives restarts. Oldest drop off first.</div>
+              <div class="help" id="trash-size-help">Survives restarts. Oldest drop off first.</div>
             </div>
             <div class="stepper">
-              <input id="trash-size" type="number" min="10" max="1000" step="10" inputmode="numeric" />
+              <input id="trash-size" type="number" min="10" max="1000" step="10" inputmode="numeric"
+                aria-describedby="trash-size-help" />
               <span class="unit">tabs</span>
             </div>
           </div>

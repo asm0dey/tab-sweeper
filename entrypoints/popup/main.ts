@@ -26,6 +26,8 @@ function icon(entry: TrashEntry): Node {
   if (!entry.favIconUrl) return globe();
   const img = document.createElement('img');
   img.alt = '';
+  img.loading = 'lazy'; // only rows scrolled into view fetch their favicon
+  img.referrerPolicy = 'no-referrer';
   img.src = entry.favIconUrl;
   img.addEventListener('error', () => img.replaceWith(globe()), { once: true });
   return img;
@@ -33,13 +35,19 @@ function icon(entry: TrashEntry): Node {
 
 // ---- Swept panel ----
 
+let shown: TrashEntry[] = [];
+
 function renderList() {
   const list = $('list');
   const query = $<HTMLInputElement>('q').value;
-  const shown = filterTrash(trash, query);
+  shown = filterTrash(trash, query);
+  const filtered = query.trim() !== '';
   $('tab-swept').textContent = `Swept · ${trash.length}`;
-  $<HTMLButtonElement>('restore-all').disabled = trash.length === 0;
+  const restoreAll = $<HTMLButtonElement>('restore-all');
+  restoreAll.textContent = filtered ? `Restore ${shown.length} shown` : 'Restore all';
+  restoreAll.disabled = shown.length === 0;
   $<HTMLButtonElement>('clear').disabled = trash.length === 0;
+  $('status').textContent = filtered ? `${shown.length} of ${trash.length} closed tabs match` : '';
   list.replaceChildren();
   if (shown.length === 0) {
     const empty = document.createElement('div');
@@ -51,13 +59,15 @@ function renderList() {
   for (const group of groupByDay(shown, Date.now())) {
     const sec = document.createElement('div');
     sec.className = 'sec';
+    sec.setAttribute('role', 'heading');
+    sec.setAttribute('aria-level', '2');
     sec.textContent = group.label;
     list.append(sec);
     for (const entry of group.entries) {
       const row = document.createElement('button');
       row.className = 'item';
       row.title = `${entry.title}\n${entry.url}`;
-      row.setAttribute('aria-label', `Reopen ${entry.title}`);
+      row.setAttribute('aria-label', `Reopen ${entry.title}, closed ${group.label} ${hhmm(entry.closedAt)}`);
       const title = document.createElement('span');
       title.className = 't';
       title.textContent = entry.title;
@@ -71,13 +81,33 @@ function renderList() {
   }
 }
 
-function showConfirm(on: boolean) {
-  $('ft-actions').hidden = on;
-  $('ft-confirm').hidden = !on;
-  if (on) {
-    $('confirm-text').textContent = `Clear ${trash.length} tab${trash.length === 1 ? '' : 's'}?`;
-    $('confirm-no').focus();
-  } else $('clear').focus();
+const plural = (n: number) => `${n} tab${n === 1 ? '' : 's'}`;
+/** Restoring this many or more at once asks first. */
+const RESTORE_CONFIRM_AT = 6;
+
+let pending: { run: () => Promise<unknown>; returnTo: string } | undefined;
+
+function askConfirm(text: string, returnTo: string, run: () => Promise<unknown>) {
+  pending = { run, returnTo };
+  $('confirm-text').textContent = text;
+  $('ft-actions').hidden = true;
+  $('ft-confirm').hidden = false;
+  $('confirm-no').focus();
+}
+
+function closeConfirm() {
+  const returnTo = pending?.returnTo;
+  pending = undefined;
+  $('ft-actions').hidden = false;
+  $('ft-confirm').hidden = true;
+  if (returnTo) $(returnTo).focus();
+}
+
+function restoreShown() {
+  const ids = shown.map((e) => e.id);
+  const run = () => send({ type: 'restore', ids });
+  if (ids.length < RESTORE_CONFIRM_AT) return void run();
+  askConfirm(`Reopen ${plural(ids.length)}?`, 'restore-all', run);
 }
 
 // ---- Settings panel ----
@@ -137,19 +167,33 @@ $('tab-swept').addEventListener('click', () => selectTab('swept'));
 $('tab-settings').addEventListener('click', () => selectTab('settings'));
 document.querySelector('.tabs')!.addEventListener('keydown', (e) => {
   const key = (e as KeyboardEvent).key;
-  if (key !== 'ArrowLeft' && key !== 'ArrowRight') return;
-  const next = $('tab-swept').getAttribute('aria-selected') === 'true' ? 'settings' : 'swept';
+  const current = $('tab-swept').getAttribute('aria-selected') === 'true' ? 'swept' : 'settings';
+  const next =
+    key === 'Home' ? 'swept'
+    : key === 'End' ? 'settings'
+    : key === 'ArrowLeft' || key === 'ArrowRight' ? (current === 'swept' ? 'settings' : 'swept')
+    : undefined;
+  if (!next) return;
+  e.preventDefault();
   selectTab(next);
   $(`tab-${next}`).focus();
 });
 
 $('q').addEventListener('input', renderList);
-$('restore-all').addEventListener('click', () => send({ type: 'restore', ids: trash.map((e) => e.id) }));
-$('clear').addEventListener('click', () => showConfirm(true));
-$('confirm-no').addEventListener('click', () => showConfirm(false));
+$('restore-all').addEventListener('click', restoreShown);
+$('clear').addEventListener('click', () =>
+  askConfirm(`Clear ${plural(trash.length)}?`, 'clear', () => send({ type: 'clear' })),
+);
+$('confirm-no').addEventListener('click', closeConfirm);
 $('confirm-yes').addEventListener('click', async () => {
-  await send({ type: 'clear' });
-  showConfirm(false);
+  await pending?.run();
+  closeConfirm();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && pending) {
+    e.preventDefault(); // keep the popup open; Escape only cancels the question
+    closeConfirm();
+  }
 });
 
 $('enabled').addEventListener('click', () => saveSettings({ enabled: !settings.enabled }));
@@ -162,5 +206,16 @@ $('dev-minutes').addEventListener('change', (e) =>
   saveSettings({ devMinutes: (e.target as HTMLInputElement).checked }),
 );
 
-browser.storage.onChanged.addListener((_changes, area) => area === 'local' && load());
+// Redraw only what changed: the list rebuild loses keyboard focus, and lastSweep is written every 5 minutes.
+browser.storage.onChanged.addListener(async (changes, area) => {
+  if (area !== 'local') return;
+  if (changes.trash) {
+    trash = await getTrash();
+    renderList();
+  }
+  if (changes.settings || changes.lastSweep) {
+    [settings, lastSweep] = await Promise.all([getSettings(), getLastSweep()]);
+    renderSettings();
+  }
+});
 load();
