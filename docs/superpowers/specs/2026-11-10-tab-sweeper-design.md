@@ -57,7 +57,13 @@ The goal is less clutter, not lower memory use (unloading/discarding tabs is not
   - `tab.audible` (playing sound; a paused video is fair game)
 - Private/incognito windows are ignored completely: never swept, never written to the trash (Claude's call, to keep
   private URLs off disk). The manifest does not request incognito access.
-- Hidden tabs (`tab.hidden`, which is how Zen hides other workspaces' tabs) are **not** exempt.
+- **Zen workspaces (verified 2026-11-10):** Zen shows extensions only the current workspace's tabs (plus
+  Essentials). Tabs in other workspaces are therefore swept when the user next switches to that workspace,
+  within one check of arriving, not while they're away. `tab.hidden` is false for every visible tab.
+- **Chrome `lastAccessed` (verified 2026-11-10):** Chrome stamps it when a tab becomes active, not when the user
+  leaves it. The extension records when each tab stops being active (`tabs.onActivated`, plus every sweep for the
+  currently active tabs) and uses `max(lastAccessed, clockStart, lastSeen)`. Tab ids don't survive a restart,
+  so after a restart this falls back to `lastAccessed`.
 - Each closed tab is appended to the trash before it is removed.
 - The time and count of the last sweep are stored for the Settings footer.
 
@@ -117,9 +123,8 @@ Mockups from the session: `docs/superpowers/mockups/` (`popup-layout.html`, `pop
 - **Essentials = pinned (verify first).** Zen implements Essentials on top of Firefox pinned tabs, so
   `tab.pinned` should be true for them. The extension API cannot tell an Essential apart from a pinned tab, but
   that doesn't matter here because both are skipped. This is the riskiest assumption: confirm it in Zen before
-  building the rest, by pinning a tab, adding an Essential, and logging `tabs.query({})`. If Essentials or
-  workspace-pinned tabs are **not** `pinned`, stop and go back to the author before building further
-  (Claude's call; there is no pre-approved fallback).
+  building the rest, by pinning a tab, adding an Essential, and logging `tabs.query({})`. **Verified in Zen
+  2026-11-10:** Essentials and workspace-pinned tabs both report `pinned: true`.
 - **Chromium targets:** Chrome, Chromium and Brave (the browsers the author uses). Test pinned-tab detection and
   the sweep in all three, plus Zen.
 - **`lastAccessed`**: available in Firefox and in Chrome 121+. Whether it survives a browser restart is unverified;

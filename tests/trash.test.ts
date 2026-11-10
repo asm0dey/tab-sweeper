@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test';
 import {
+  dropReswept,
   filterTrash,
   groupByDay,
   pushEntries,
@@ -50,3 +51,14 @@ test('groups by local day with Today/Yesterday/date labels', () => {
   expect(g.map((x) => x.label)).toEqual(['Today', 'Yesterday', 'Sun 8 Nov']);
   expect(g.map((x) => x.entries.length)).toEqual([2, 1, 1]);
 });
+
+test('dropReswept removes older entries for a tab that is being swept again', () => {
+  const t = [
+    { ...e('old', 1), tabId: 5, url: 'https://x.test' },
+    { ...e('other', 1), tabId: 6, url: 'https://y.test' },
+    { ...e('navigated', 1), tabId: 5, url: 'https://elsewhere.test' },
+  ];
+  expect(ids(dropReswept(t, [{ id: 5, url: 'https://x.test' }]))).toEqual(['other', 'navigated']);
+});
+
+test('toEntry records the tab id', () => expect(toEntry({ id: 9, url: 'https://a.test' }, 1, 'x').tabId).toBe(9));

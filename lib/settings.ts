@@ -32,3 +32,10 @@ export const idleMs = (s: Settings, isDev: boolean): number =>
   s.idleHours * (minutesMode(s, isDev) ? 60_000 : 3_600_000);
 
 export const sweepPeriodMinutes = (s: Settings, isDev: boolean): number => (minutesMode(s, isDev) ? 1 : 5);
+
+/** Parses a typed number; undefined for empty or non-numeric input, so it is never saved as 0. */
+export function parseCount(value: string): number | undefined {
+  if (value.trim() === '') return undefined;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : undefined;
+}

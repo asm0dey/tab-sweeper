@@ -4,11 +4,18 @@ export interface TrashEntry {
   title: string;
   favIconUrl?: string;
   closedAt: number;
+  /** Session-scoped; used to spot a tab that survived its sweep and is swept again. */
+  tabId?: number;
 }
 
-export function toEntry(tab: { url: string; title?: string; favIconUrl?: string }, closedAt: number, id: string): TrashEntry {
+export function toEntry(
+  tab: { id?: number; url: string; title?: string; favIconUrl?: string },
+  closedAt: number,
+  id: string,
+): TrashEntry {
   return {
     id,
+    tabId: tab.id,
     url: tab.url,
     title: tab.title || tab.url,
     // data: favicons can be large; 1000 of them would strain the storage.local quota.
@@ -26,6 +33,12 @@ export const removeEntries = (trash: TrashEntry[], ids: string[]): TrashEntry[] 
   const drop = new Set(ids);
   return trash.filter((e) => !drop.has(e.id));
 };
+
+/** Drops entries left by an earlier sweep of a tab that didn't actually close, so it isn't trashed twice. */
+export function dropReswept(trash: TrashEntry[], tabs: { id?: number; url?: string }[]): TrashEntry[] {
+  const keys = new Set(tabs.map((t) => `${t.id}\n${t.url}`));
+  return trash.filter((e) => e.tabId === undefined || !keys.has(`${e.tabId}\n${e.url}`));
+}
 
 export function filterTrash(trash: TrashEntry[], query: string): TrashEntry[] {
   const q = query.trim().toLowerCase();

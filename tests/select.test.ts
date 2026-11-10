@@ -49,3 +49,9 @@ test('url classifiers', () => {
   expect(isBlankTab('about:blank')).toBe(true);
   expect(isBlankTab('https://a.test')).toBe(false);
 });
+
+test('lastSeen keeps a tab the user just left (Chrome stamps lastAccessed only on activation)', () => {
+  const t = tab({ id: 7, lastAccessed: now - 20 * H });
+  expect(selectTabsToClose([t], now, idle, 0, { '7': now - 1 * H })).toHaveLength(0);
+  expect(selectTabsToClose([t], now, idle, 0, { '7': now - 13 * H })).toHaveLength(1);
+});

@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { DEFAULT_SETTINGS, idleMs, normalizeSettings, sweepPeriodMinutes } from '../lib/settings';
+import { DEFAULT_SETTINGS, idleMs, normalizeSettings, parseCount, sweepPeriodMinutes } from '../lib/settings';
 
 test('defaults when storage is empty', () => expect(normalizeSettings(undefined)).toEqual(DEFAULT_SETTINGS));
 
@@ -31,4 +31,11 @@ test('sweep period 5 min, 1 min in dev minutes mode', () => {
   expect(sweepPeriodMinutes(DEFAULT_SETTINGS, false)).toBe(5);
   expect(sweepPeriodMinutes({ ...DEFAULT_SETTINGS, devMinutes: true }, true)).toBe(1);
   expect(sweepPeriodMinutes({ ...DEFAULT_SETTINGS, devMinutes: true }, false)).toBe(5);
+});
+
+test('parseCount rejects empty and non-numeric input instead of turning it into 0', () => {
+  expect(parseCount('')).toBeUndefined();
+  expect(parseCount('  ')).toBeUndefined();
+  expect(parseCount('abc')).toBeUndefined();
+  expect(parseCount('24')).toBe(24);
 });

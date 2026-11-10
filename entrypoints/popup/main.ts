@@ -1,5 +1,5 @@
 import type { Message } from '@/lib/messages';
-import { DEFAULT_SETTINGS, normalizeSettings, type Settings } from '@/lib/settings';
+import { DEFAULT_SETTINGS, normalizeSettings, parseCount, type Settings } from '@/lib/settings';
 import { getLastSweep, getSettings, getTrash, type LastSweep } from '@/lib/store';
 import { filterTrash, groupByDay, type TrashEntry } from '@/lib/trash';
 
@@ -103,7 +103,12 @@ const saveSettings = (patch: Partial<Settings>) => {
 
 function bindNumber(id: string, key: 'idleHours' | 'trashSize') {
   const input = $<HTMLInputElement>(id);
-  const commit = () => saveSettings({ [key]: Number(input.value) }).then(() => (input.value = String(settings[key])));
+  const commit = () => {
+    const value = parseCount(input.value);
+    // An emptied field must not save as 0: that would clamp to the minimum and trim the trash.
+    if (value === undefined) return void (input.value = String(settings[key]));
+    saveSettings({ [key]: value }).then(() => (input.value = String(settings[key])));
+  };
   input.addEventListener('change', commit);
   input.addEventListener('keydown', (e) => e.key === 'Enter' && input.blur());
 }
